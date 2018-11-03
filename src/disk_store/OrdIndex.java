@@ -18,31 +18,31 @@ public class OrdIndex implements DBIndex {
 	private ArrayList keys;
 	private ArrayList blockNums;
 	public OrdIndex() {
-		keys = new ArrayList<int>();
-		blockNums = new ArrayList<int>();
+		keys = new ArrayList<Integer>();
+		blockNums = new ArrayList<Integer>();
 	}
 	
 	@Override
 	public List<Integer> lookup(int key) {
 		ArrayList<Integer> result = new ArrayList<Integer>();
-		for (int pos : lookupPosOfAll(key)){
-			result.add(blockNums.get(pos));
+		for (Integer pos : lookupPosOfAll(key)){
+			result.add((Integer)blockNums.get(pos));
 		}
 		return result;
 	}
 
-	private List<integer> lookupPosOfAll(int key){
+	private List<Integer> lookupPosOfAll(int key){
 		int pos = binarySearch(key);
 		ArrayList<Integer> result = new ArrayList<Integer>();
 		for (int i = pos; i >= 0; i--){
-			if (keys.get(i) == key){
-				result.add(i);
+			if ((Integer)keys.get(i) == key){
+				result.add(0,i);
 			}else{
 				break;
 			}
 		}
-		for (int i = pos; i < size(); i++){
-			if (keys.get(i) == key){
+		for (int i = pos + 1; i < size(); i++){
+			if ((Integer)keys.get(i) == key){
 				result.add(i);
 			}else{
 				break;
@@ -54,10 +54,10 @@ public class OrdIndex implements DBIndex {
 		int begin = 0;
 		int end = size();
 		int val;
-		int pos;
+		int pos = 0;
 		while (begin != end){
 			pos = (begin + end)/2;
-			val = keys.get(pos);
+			val = (Integer)keys.get(pos);
 			if (val < key){
 				end = pos;
 			}
@@ -79,9 +79,8 @@ public class OrdIndex implements DBIndex {
 	@Override
 	public void delete(int key, int blockNum) {
 		for (int pos : lookupPosOfAll(key)){
-			if (blockNums.get(pos) == blockNum){
-				remove(pos);
-				return;
+			if ((Integer)blockNums.get(pos) == blockNum){
+				delete(pos);
 			}
 		}
 	}
@@ -91,15 +90,15 @@ public class OrdIndex implements DBIndex {
 	 * @return
 	 */
 	public int size() {
-		return keys.size()
+		return keys.size();
 	}
 	private void delete(int index){
-		key.remove(index);
+		keys.remove(index);
 		blockNums.remove(index);
 	}
-	private void put(int index, int key, int blockNum){
-		keys.insert(index, key);
-		blockNums.insert(index, blockNum);
+	private void insert(int index, int key, int blockNum){
+		keys.add(index, key);
+		blockNums.add(index, blockNum);
 	}
 
 	@Override
