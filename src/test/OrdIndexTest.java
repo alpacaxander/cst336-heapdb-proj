@@ -28,25 +28,20 @@ class OrdIndexTest {
 		idx.insert(3, 1);
 		idx.insert(4, 2);
 	}
-	
-	@Test
-	void testInsert() {
-		assertTrue(idx.size() == 7);
-	}
-	
+
 	@Test
 	void testLookup() {
 		List<Integer> result = idx.lookup(1);
 		List<Integer> expected = Arrays.asList(1,2);
-		assertTrue(result.equals(expected));
+		assertTrue(result.size() == 2 && result.containsAll(expected));
 		
 		result = idx.lookup(2);
 		expected = Arrays.asList(1,2,3);
-		assertTrue(result.equals(expected));
+		assertTrue(result.size() == 3 && result.containsAll(expected));
 		
 		result = idx.lookup(4);
 		expected = Arrays.asList(2);
-		assertTrue(result.equals(expected));
+		assertTrue(result.size() == 1 && result.containsAll(expected));
 		
 		result = idx.lookup(6);
 		assertTrue(result.size() == 0);
@@ -62,10 +57,30 @@ class OrdIndexTest {
 		
 		idx.delete(1, 1);
 		assertTrue(idx.size() == 5);
-		
+
 		idx.delete(2, 2);
 		idx.delete(2, 3);
 		List<Integer> result = idx.lookup(2);
 		assertTrue(result.size() == 0);
 	}
+
+	@Test
+	void testDeleteLookup() {
+		idx.insert(2, 1);
+		System.out.print(idx);
+		List<Integer> result = idx.lookup(2);
+		List<Integer> expected = Arrays.asList(1,2,3);
+		System.out.print(idx);
+		System.out.print("------");
+		System.out.print(result);
+		assertTrue(result.size() == 3 && result.containsAll(expected));
+		
+		idx.delete(2, 1);
+		result = idx.lookup(2);
+		assertTrue(result.size() == 3 && result.containsAll(expected));
+
+		idx.delete(2, 1);
+		result = idx.lookup(2);
+		expected = Arrays.asList(2,3);
+		assertTrue(result.size() == 2 && result.containsAll(expected));	}
 }

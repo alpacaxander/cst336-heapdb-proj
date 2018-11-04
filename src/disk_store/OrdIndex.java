@@ -15,8 +15,8 @@ import java.util.List;
 
 public class OrdIndex implements DBIndex {
 	
-	private ArrayList keys;
-	private ArrayList blockNums;
+	private ArrayList<Integer> keys;
+	private ArrayList<Integer> blockNums;
 	public OrdIndex() {
 		keys = new ArrayList<Integer>();
 		blockNums = new ArrayList<Integer>();
@@ -25,62 +25,46 @@ public class OrdIndex implements DBIndex {
 	@Override
 	public List<Integer> lookup(int key) {
 		ArrayList<Integer> result = new ArrayList<Integer>();
-		for (Integer pos : lookupPosOfAll(key)){
-			result.add((Integer)blockNums.get(pos));
-		}
-		return result;
-	}
-
-	private List<Integer> lookupPosOfAll(int key){
-		int pos = binarySearch(key);
-		ArrayList<Integer> result = new ArrayList<Integer>();
-		for (int i = pos; i >= 0; i--){
-			if ((Integer)keys.get(i) == key){
-				result.add(0,i);
-			}else{
-				break;
-			}
-		}
-		for (int i = pos + 1; i < size(); i++){
-			if ((Integer)keys.get(i) == key){
-				result.add(i);
-			}else{
-				break;
+		for (int pointer = binarySearch(key); pointer < size(); pointer++) {
+			int blockNum = blockNums.get(pointer);
+			if ((int)keys.get(pointer) == key && !result.contains(blockNum)) {
+				result.add(blockNum);
 			}
 		}
 		return result;
 	}
 	private Integer binarySearch(int key){
-		int begin = 0;
-		int end = size();
-		int val;
-		int pos = 0;
-		while (begin != end){
-			pos = (begin + end)/2;
-			val = (Integer)keys.get(pos);
-			if (val < key){
-				end = pos;
+		int low = 0;
+		int high = size() - 1;
+		int pointer;
+		int mid = 0;
+		while (low <= high){
+			mid = (low + high)/2;
+			pointer = (int)keys.get(mid);
+			if (pointer >= key){
+				high = mid - 1;
 			}
-			else if (val > key){
-				begin = pos;
-			}
-			else {
-				break;
+			else if (pointer < key){
+				low = mid + 1;
 			}
 		}
-		return pos;
+		return low;
 	}
 	
 	@Override
 	public void insert(int key, int blockNum) {
-		insert(binarySearch(key), key, blockNum);
+		int index = binarySearch(key);
+		keys.add(index, key);
+		blockNums.add(index, blockNum);
 	}
 
 	@Override
 	public void delete(int key, int blockNum) {
-		for (int pos : lookupPosOfAll(key)){
-			if ((Integer)blockNums.get(pos) == blockNum){
-				delete(pos);
+		for (int index = binarySearch(key); index < size() && keys.get(index) == key; index++){
+			if (blockNums.get(index) == blockNum){
+				keys.remove(index);
+				blockNums.remove(index);
+				return;
 			}
 		}
 	}
@@ -92,17 +76,13 @@ public class OrdIndex implements DBIndex {
 	public int size() {
 		return keys.size();
 	}
-	private void delete(int index){
-		keys.remove(index);
-		blockNums.remove(index);
-	}
-	private void insert(int index, int key, int blockNum){
-		keys.add(index, key);
-		blockNums.add(index, blockNum);
-	}
 
 	@Override
 	public String toString() {
-		throw new UnsupportedOperationException();
+		String result = "";
+		for (int i = 0; i < size(); i++) {
+			result += keys.get(i) + ", " + blockNums.get(i) + "\n";
+		}
+		return result;
 	}
 }
