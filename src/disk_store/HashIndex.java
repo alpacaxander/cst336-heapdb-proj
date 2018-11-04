@@ -3,6 +3,7 @@ package disk_store;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,30 +15,41 @@ import java.util.Set;
 
 public class HashIndex implements DBIndex {
 
-	/**
-	 * Create an new index.
-	 */
+	HashMap<Integer, ArrayList<Integer>> table;
+
 	public HashIndex() {
-		throw new UnsupportedOperationException();
+		table = new HashMap<Integer, ArrayList<Integer>>();
 	}
 	
 	@Override
 	public List<Integer> lookup(int key) {
-		throw new UnsupportedOperationException();
+		return table.get(key);
 	}
 	
 	@Override
 	public void insert(int key, int blockNum) {
-		throw new UnsupportedOperationException();
+		if ( !table.containsKey(key)) {
+			ArrayList<Integer> value = new ArrayList<Integer>();
+			value.add(blockNum);
+			table.put(key, value);
+		} else {
+			table.get(key).add(blockNum);
+		}
 	}
 
 	@Override
 	public void delete(int key, int blockNum) {
-		throw new UnsupportedOperationException();
+		table.get(key).remove((Integer) blockNum);
 	}
 	
 	@Override
 	public String toString() {
-		throw new UnsupportedOperationException();
+		String result = "";
+	    for (Integer key : table.keySet()) {
+	    	for (Integer blockNum : table.get(key)) {
+		    	result += key + ", " + blockNum;
+	    	}
+	    }
+	    return result;
 	}
 }
