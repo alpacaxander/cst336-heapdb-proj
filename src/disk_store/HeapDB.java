@@ -213,7 +213,6 @@ public class HeapDB implements DB, Iterable<Record>{
 						IntField temp = (IntField) rec.get(i);
 						index.insert(temp.getValue(), blockNum);
 					}
-					
 					return true;
 				}
 			}
@@ -262,7 +261,6 @@ public class HeapDB implements DB, Iterable<Record>{
 								IntField temp = (IntField) rec.get(i);
 								index.delete(temp.getValue(), blockNum);
 							}
-
 							return true;
 						}
 					}
@@ -295,22 +293,39 @@ public class HeapDB implements DB, Iterable<Record>{
 			throw new IllegalArgumentException("Field '"+fname+"' not in schema.");
 		}
 		
-		List<Record> result = new ArrayList<Record>();
+		List<Record> result = new ArrayList<Record>();		
 		Record rec = schema.blankRecord();
 		
-		for (int blockNum : indexes[fieldNum].lookup(key)) {
-			bf.read(blockNum, buffer);
-			for (int recNum = 0; recNum < recMap.size(); recNum++) {
-				if (recMap.getBit(recNum)) {
-					int recordIndex = recordLocation(recNum);
-					rec.deserialize(buffer.buffer, recordIndex);
-					IntField temp = (IntField) rec.get(fieldNum);
-					if (temp.getValue() == key) {
-						result.add(rec);
+		if (indexes[fieldNum] == null) {
+			for (int blockNum = bitmapBlock+1; blockNum < blockMap.size(); blockNum++) {
+				if (blockMap.getBit(blockNum)) {
+					bf.read(blockNum, buffer);
+					for (int recNum = 0; recNum < recMap.size(); recNum++) {
+						if (recMap.getBit(recNum)) {
+							int index = recordLocation(recNum);
+							rec.deserialize(buffer.buffer, index);
+							IntField temp = (IntField) rec.get(fieldNum);
+							if (temp.getValue() == key) {
+								result.add(rec);
+							}
+						}
 					}
 				}
 			}
-		
+		} else {
+			for (int blockNum : indexes[fieldNum].lookup(key)) {
+				bf.read(blockNum, buffer);
+				for (int recNum = 0; recNum < recMap.size(); recNum++) {
+					if (recMap.getBit(recNum)) {
+						int recordIndex = recordLocation(recNum);
+						rec.deserialize(buffer.buffer, recordIndex);
+						IntField temp = (IntField) rec.get(fieldNum);
+						if (temp.getValue() == key) {
+							result.add(rec);
+						}
+					}
+				}
+			}
 		}
 		return result;
 	}

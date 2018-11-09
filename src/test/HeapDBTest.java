@@ -27,7 +27,7 @@ import disk_store.Schema;
 class HeapDBTest {
 	
 	static Random rand;
-	static String dbFilename = "C:/temp3.txt";
+	static String dbFilename = "C:/Users/alexa/temp3.txt";
 	static Schema schema;
 	
 	@BeforeAll
