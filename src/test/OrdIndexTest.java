@@ -8,16 +8,17 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import disk_store.HashIndex;
 import disk_store.OrdIndex;
 
 class OrdIndexTest {
 	
-	OrdIndex idx;
+	HashIndex idx;
 	
 	@BeforeEach
 	void init() {
 		// create the index
-		idx = new OrdIndex();
+		idx = new HashIndex();
 		
 		// insert some elements
 		idx.insert(1, 1);
@@ -66,17 +67,20 @@ class OrdIndexTest {
 
 	@Test
 	void testDeleteLookup() {
-		idx.insert(2, 1);
 		System.out.print(idx);
+		System.out.print("------");
+		idx.insert(2, 1);
 		List<Integer> result = idx.lookup(2);
 		List<Integer> expected = Arrays.asList(1,2,3);
 		System.out.print(idx);
 		System.out.print("------");
-		System.out.print(result);
 		assertTrue(result.size() == 3 && result.containsAll(expected));
 		
 		idx.delete(2, 1);
 		result = idx.lookup(2);
+		System.out.print(idx);
+		System.out.print("------");
+		System.out.print(result);
 		assertTrue(result.size() == 3 && result.containsAll(expected));
 
 		idx.delete(2, 1);

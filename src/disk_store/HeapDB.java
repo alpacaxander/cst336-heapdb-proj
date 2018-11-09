@@ -299,32 +299,13 @@ public class HeapDB implements DB, Iterable<Record>{
 		if (indexes[fieldNum] == null) {
 			for (int blockNum = bitmapBlock+1; blockNum < blockMap.size(); blockNum++) {
 				if (blockMap.getBit(blockNum)) {
-					bf.read(blockNum, buffer);
-					for (int recNum = 0; recNum < recMap.size(); recNum++) {
-						if (recMap.getBit(recNum)) {
-							int index = recordLocation(recNum);
-							rec.deserialize(buffer.buffer, index);
-							IntField temp = (IntField) rec.get(fieldNum);
-							if (temp.getValue() == key) {
-								result.add(rec);
-							}
-						}
-					}
+					result.addAll(lookupInBlock(fieldNum, key, blockNum));
 				}
 			}
 		} else {
 			for (int blockNum : indexes[fieldNum].lookup(key)) {
 				bf.read(blockNum, buffer);
-				for (int recNum = 0; recNum < recMap.size(); recNum++) {
-					if (recMap.getBit(recNum)) {
-						int recordIndex = recordLocation(recNum);
-						rec.deserialize(buffer.buffer, recordIndex);
-						IntField temp = (IntField) rec.get(fieldNum);
-						if (temp.getValue() == key) {
-							result.add(rec);
-						}
-					}
-				}
+				result.addAll(lookupInBlock(fieldNum, key, blockNum));
 			}
 		}
 		return result;
