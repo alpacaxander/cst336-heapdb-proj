@@ -205,8 +205,14 @@ public class HeapDB implements DB, Iterable<Record>{
 					recMap.setBit(recNum, true);
 					bf.write(blockNum, buffer);
 					
-					// index maintenance
-					// YOUR CODE HERE
+					for (int i = 0; i < indexes.length; i++) {
+						DBIndex index = indexes[i];
+						if (index == null) {
+							continue;
+						}
+						IntField temp = (IntField) rec.get(i);
+						index.insert(temp.getValue(), blockNum);
+					}
 					
 					return true;
 				}
@@ -248,8 +254,14 @@ public class HeapDB implements DB, Iterable<Record>{
 							recMap.setBit(recNum, false);
 							bf.write(blockNum, buffer);
 							
-							// index maintenance
-							// YOUR CODE HERE
+							for (int i = 0; i < indexes.length; i++) {
+								DBIndex index = indexes[i];
+								if (index == null) {
+									continue;
+								}
+								IntField temp = (IntField) rec.get(i);
+								index.delete(temp.getValue(), blockNum);
+							}
 
 							return true;
 						}
@@ -284,20 +296,23 @@ public class HeapDB implements DB, Iterable<Record>{
 		}
 		
 		List<Record> result = new ArrayList<Record>();
+		Record rec = schema.blankRecord();
 		
-		// YOUR CODE HERE
+		for (int blockNum : indexes[fieldNum].lookup(key)) {
+			bf.read(blockNum, buffer);
+			for (int recNum = 0; recNum < recMap.size(); recNum++) {
+				if (recMap.getBit(recNum)) {
+					int recordIndex = recordLocation(recNum);
+					rec.deserialize(buffer.buffer, recordIndex);
+					IntField temp = (IntField) rec.get(fieldNum);
+					if (temp.getValue() == key) {
+						result.add(rec);
+					}
+				}
+			}
 		
-		// You should use an index for the lookup if an index is
-		// available on the given field.  If not perform a linear
-		// search over the records in the DB.  The iterator makes
-		// it easy to perform a linear search, using code like
-		// this:
-		// for (Record rec : this) {
-		//    ...
-		// }
-
-		// replace the following line with your return statement
-		throw new UnsupportedOperationException();
+		}
+		return result;
 	}
 	
 	// Perform a linear search in the block with the given blockNum
@@ -381,12 +396,23 @@ public class HeapDB implements DB, Iterable<Record>{
 		if (index == null) {
 			throw new IllegalArgumentException("index is null");
 		}
-		
-		// YOUR CODE HERE
-		// for each record in the DB, you will need to insert its
-		// search key value and the block number
 
-		throw new UnsupportedOperationException();
+		Record rec = schema.blankRecord();
+		bf.read(bitmapBlock, blockmapBuffer); 
+		
+		for (int blockNum = bitmapBlock+1; blockNum < blockMap.size(); blockNum++) {
+			if (blockMap.getBit(blockNum)) {
+				bf.read(blockNum, buffer);
+				for (int recNum = 0; recNum < recMap.size(); recNum++) {
+					if (recMap.getBit(recNum)) {
+						int recordIndex = recordLocation(recNum);
+						rec.deserialize(buffer.buffer, recordIndex);
+						IntField temp = (IntField) rec.get(fieldNum);
+						index.insert(temp.getValue(), blockNum);
+					}
+				}
+			}
+		}
 	}
 	
 	/**

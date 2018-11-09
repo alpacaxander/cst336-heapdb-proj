@@ -18,7 +18,7 @@ public class HashIndex implements DBIndex {
 	HashMap<Integer, ArrayList<Integer>> table;
 
 	public HashIndex() {
-		table = new HashMap<Integer, ArrayList<Integer>>();
+		table = new HashMap<Integer, ArrayList<Integer>>(1024);
 	}
 	
 	@Override
